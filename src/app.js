@@ -26,7 +26,11 @@ app.use(helmet());
 // CORS configuration
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const allowedOrigins = FRONTEND_URL.split(',').map(s => s.trim());
-allowedOrigins.push('https://wordsquares.us', 'https://www.wordsquares.us');
+allowedOrigins.push(
+  'https://wordsquares.us',
+  'https://www.wordsquares.us',
+  'https://wordsquare-frontend.vercel.app'
+);
 
 app.use(cors({
   origin: function (origin, callback) {
