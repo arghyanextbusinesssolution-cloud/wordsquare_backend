@@ -25,24 +25,36 @@ app.use(helmet());
 
 // CORS configuration
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-const allowedOrigins = FRONTEND_URL.split(',').map(s => s.trim());
-allowedOrigins.push(
+const allowedOrigins = FRONTEND_URL.split(',')
+  .map(s => s.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+// Always ensure production domains are allowed
+const defaultOrigins = [
   'https://wordsquares.us',
   'https://www.wordsquares.us',
   'https://wordsquare-frontend.vercel.app'
-);
+];
+
+defaultOrigins.forEach(origin => {
+  if (!allowedOrigins.includes(origin)) {
+    allowedOrigins.push(origin);
+  }
+});
 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes('*')) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(cleanOrigin)) {
+      return callback(null, true);
+    }
     console.warn(`Blocked CORS request from origin: ${origin}`);
     return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Rate limiting
